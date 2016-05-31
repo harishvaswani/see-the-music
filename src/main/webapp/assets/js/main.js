@@ -106,7 +106,7 @@
 
 		})();
 
-	// Signup Form.
+	// Main Form
 		(function() {
 
 			// Vars
