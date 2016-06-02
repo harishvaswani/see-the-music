@@ -10,14 +10,10 @@
 
     <bean class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor"/>
 
-    <bean id="userDao" class="com.sample.dao.UserDaoImpl"/>
+    <bean id="stmService" class="com.stm.service.STMServiceImpl"/>
 
-    <bean id="userService" class="com.sample.service.UserServiceImpl" dependency-check="objects">
-        <property name="userDao" ref="userDao"/>
-    </bean>
-
-    <bean id="userRest" class="com.sample.rest.UserRest"  >
-        <property name="userService" ref="userService"/>
+    <bean id="stmRest" class="com.stm.rest.STMRest"  >
+        <property name="stmService" ref="stmService"/>
     </bean>
 
 </beans>

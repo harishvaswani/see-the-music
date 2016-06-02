@@ -63,21 +63,45 @@
                 }
 		});
 
-        $('#slideshow').bjqs({
-    		'height' : 320,
-            'width' : 620,
-            'animtype' : 'fade', // accepts 'fade' or 'slide'
-            'animduration' : 450, // how fast the animation are
-            'animspeed' : 4000, // the delay between each slide
-            'automatic' : true,
-          	'showcontrols' : false, // show next and prev controls
-          	'showmarkers' : false, // Show individual slide markers
-          	'keyboardnav' : true, // enable keyboard navigation
-	        'hoverpause' : true // pause the slider on hover
+		$.ajax({
+        	type: "GET",
+            url: "/seethemusic/service/stm/response",
+            data: { artist: $artist.value, song: $song.value },
+            success: function(resp){
+            	// we have a success response
 
-		});
+                if (resp.payload.lyrics == null) {
+                	//Show soft error message
+                	$('#result').text("Sorry! Could not retrieve the song mood and photos due to missing lyrics.");
+                } else {
+					//Load the images
+					var images = resp.payload.photoURLs;
+					jQuery.each(images, function(i, val) {
+						//do something here
+						$("#slideshow-li").append('<li><img src='+val+'></li>');
+					});
+					//Begin slideshow
+                    $('#slideshow').bjqs({
+                    	'height' : 320,
+                        'width' : 620,
+                        'animtype' : 'fade', // accepts 'fade' or 'slide'
+                        'animduration' : 450, // how fast the animation are
+                       	'animspeed' : 4000, // the delay between each slide
+                       	'automatic' : true,
+                    	'showcontrols' : false, // show next and prev controls
+                   		'showmarkers' : false, // Show individual slide markers
+                    	'keyboardnav' : true, // enable keyboard navigation
+                      	'hoverpause' : true // pause the slider on hover
+                    });
+					//Show the result
+          			$('#result').text("Song Mood: "+resp.payload.topClass+", Confidence: "+resp.payload.confidence);
+          		}
 
-
+          	},
+            error: function(e){
+     	     	//Show hard error message (server error)
+                 $('#result').text("ERROR: Sorry! Could not retrieve the song mood due to server issues. Working on it...");
+         	}
+       	});
 	});
-
 })();
