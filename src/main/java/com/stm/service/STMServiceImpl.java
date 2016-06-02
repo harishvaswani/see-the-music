@@ -28,9 +28,9 @@ public class STMServiceImpl implements STMService {
 
     private static final int MAX_LYRICS_LENGTH=1024;
     /**
-     * Returns an STMBean object which is a composite of data collected from Watson and Flickr APIs.
+     * Returns an STMBean object which is a composite of data collected from ChartLyrics, Watson and Flickr APIs.
      * It users the artist and the song names to get the lyrics of the song and pass that on to Watson
-     * to derive the mood from the lyrics. The mood (classifier) is then used to query the Flickr API
+     * to derive the classification (mood) from the lyrics. The mood is then used to query the Flickr API
      * to get relevant images.
      * @param artist The name of the artist
      * @param song The name of the song
@@ -111,17 +111,6 @@ public class STMServiceImpl implements STMService {
     private List<String> getPhotoURLs(String tag) {
         List<String> photoURLs = new ArrayList<String>();
 
-        //https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=d332527aa9fd2b864ce83813c5ca32f1&tags=inspirational&per_page=5&page=1&format=json
-
-        /*jsonFlickrApi({ "photos": { "page": 1, "pages": "18122", "perpage": 5, "total": "90608",
-                "photo": [
-            { "id": "27329822001", "owner": "115130635@N04", "secret": "e3d7392e1b", "server": "7283", "farm": 8, "title": "Simply Rest", "ispublic": 1, "isfriend": 0, "isfamily": 0 },
-            { "id": "27299132642", "owner": "85608594@N00", "secret": "d5b7138b89", "server": "7298", "farm": 8, "title": "Michael Bernard Beckwith When you wake up in the morning, let your first thought be one of thanksgiving", "ispublic": 1, "isfriend": 0, "isfamily": 0 },
-            { "id": "27362366296", "owner": "85608594@N00", "secret": "da7b540c14", "server": "7409", "farm": 8, "title": "Eckhart Tolle The way in which you perceive the other is determined by your own thought forms", "ispublic": 1, "isfriend": 0, "isfamily": 0 },
-            { "id": "26784417044", "owner": "85608594@N00", "secret": "9235df94fa", "server": "7226", "farm": 8, "title": "Mandy Hale You don't always need a plan. Sometimes you just need to breathe, trust, let go and see what happens", "ispublic": 1, "isfriend": 0, "isfamily": 0 },
-            { "id": "26782758893", "owner": "121900055@N05", "secret": "61dc463f47", "server": "7094", "farm": 8, "title": "The Little Things In Life", "ispublic": 1, "isfriend": 0, "isfamily": 0 }
-            ] }, "stat": "ok" })*/
-
         Client client = Client.create();
 
         WebResource webResource = client
@@ -135,12 +124,26 @@ public class STMServiceImpl implements STMService {
                     + response.getStatus());
         }
 
-        String output = response.getEntity(String.class);
-        //System.out.println("Output from Server .... \n");
-        //System.out.println(output);
+        return getConstructedURLs(response.getEntity(String.class));
+    }
 
+    protected List<String> getConstructedURLs(String flikrResponse) {
+
+        /*
+        Example flikr response
+        { "photos": { "page": 1, "pages": "18122", "perpage": 5, "total": "90608",
+                "photo": [
+           { "id": "27329822001", "owner": "115130635@N04", "secret": "e3d7392e1b", "server": "7283", "farm": 8, "title": "Simply Rest", "ispublic": 1, "isfriend": 0, "isfamily": 0 },
+           { "id": "27299132642", "owner": "85608594@N00", "secret": "d5b7138b89", "server": "7298", "farm": 8, "title": "Michael Bernard Beckwith When you wake up in the morning, let your first thought be one of thanksgiving", "ispublic": 1, "isfriend": 0, "isfamily": 0 },
+           { "id": "27362366296", "owner": "85608594@N00", "secret": "da7b540c14", "server": "7409", "farm": 8, "title": "Eckhart Tolle The way in which you perceive the other is determined by your own thought forms", "ispublic": 1, "isfriend": 0, "isfamily": 0 },
+           { "id": "26784417044", "owner": "85608594@N00", "secret": "9235df94fa", "server": "7226", "farm": 8, "title": "Mandy Hale You don't always need a plan. Sometimes you just need to breathe, trust, let go and see what happens", "ispublic": 1, "isfriend": 0, "isfamily": 0 },
+           { "id": "26782758893", "owner": "121900055@N05", "secret": "61dc463f47", "server": "7094", "farm": 8, "title": "The Little Things In Life", "ispublic": 1, "isfriend": 0, "isfamily": 0 }
+           ] }, "stat": "ok" }
+        */
+
+        List<String> photoURLs = new ArrayList<String>();
         //Construct the URLs
-        JsonReader reader = new JsonReader(new StringReader(output));
+        JsonReader reader = new JsonReader(new StringReader(flikrResponse));
         reader.setLenient(true);
         JsonElement jelement = new JsonParser().parse(reader);
         JsonObject jobject = jelement.getAsJsonObject();
@@ -154,11 +157,9 @@ public class STMServiceImpl implements STMService {
             String secret = jobject.get("secret").getAsString();
 
             //Example URL: https://farm{farm-id}.staticflickr.com/{server-id}/{id}_{secret}.jpg
-            String url = "https://farm"+farmId+".staticflickr.com/"+serverId+"/"+id+"_"+secret+".jpg";
-            System.out.println("URL is"+url);
+            String url = "https://farm" + farmId + ".staticflickr.com/" + serverId + "/" + id + "_" + secret + ".jpg";
             photoURLs.add(url);
         }
-
         return photoURLs;
     }
 }
