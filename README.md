@@ -15,7 +15,9 @@ The user views these images in the app while enjoying a 30 second clip of the so
 # Download and deployment
 
 Feel free to clone the repo and build the war file. The steps:
-1. Execute 'gradle war' in the root directory and it should create the war file in ~/see-the-music/build/dist.
+
+1. Execute 'gradle war' in the root directory. 
+2. The war file (seethemusic.war) will be in ~/see-the-music/build/dist.
 2. Deploy the war file in the app server of choice (tested on Tomcat 7) 
 
 Note: This app is for demo and non-commercial purposes only
